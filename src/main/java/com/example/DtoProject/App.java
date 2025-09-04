@@ -6,7 +6,7 @@ import com.example.DtoProject.dto.PersonaDTO;
 public class App {
     public static void main(String[] args) {
         String ruta = "c:\\temp\\personas.csv"; // Ruta del fichero
-        List<PersonaDTO> personas = new ArrayList<>();
+        List<PersonaDTO> personas = new ArrayList<>(); 
 
         try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
             String linea;

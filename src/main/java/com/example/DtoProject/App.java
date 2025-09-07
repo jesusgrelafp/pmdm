@@ -3,12 +3,19 @@ import java.io.*;
 import java.util.*;
 import com.example.DtoProject.dto.PersonaDTO;
 import com.opencsv.*;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
+import java.io.File;
 
 public class App {
     public static void main(String[] args) {
-        
+        tratamientoFicheroCSV("personas.csv");  
+        tratamientoFicheroXML("personas.xml");
+    }
+    
+    public static void tratamientoFicheroCSV(String fileName) {
         //Leer CSV
-        List<PersonaDTO> personas = leerPersonasDesdeCsvConLibreria("personas.csv");                
+        List<PersonaDTO> personas = leerPersonasDesdeCsvConLibreria(fileName);                
         
         // Mostrar en consola
         for (PersonaDTO p : personas) {
@@ -19,11 +26,10 @@ public class App {
         personas.add(new PersonaDTO("11111111H","Andres Montes",57));
         
         // Escritura CSV en el directorio "descargas"        
-        String fileName = System.getProperty("user.home")+ "\\Downloads\\personas.csv";
-        guardarPersonasEnCsvConLibreria(personas,fileName);
-        System.out.println("Fichero guardado en: " + fileName);        
-    }
-    
+        String fileNameOutput = System.getProperty("user.home")+ "\\Downloads\\"+fileName;
+        guardarPersonasEnCsvConLibreria(personas,fileNameOutput);
+        System.out.println("Fichero guardado en: " + fileNameOutput);        
+    }    
     public static List<PersonaDTO> leerPersonasDesdeCsvSinLibreria(String fileName) {
         List<PersonaDTO> personas = new ArrayList<>();
         // cargar recurso desde la carpeta "Resources"
@@ -138,6 +144,39 @@ public class App {
         }
     }
                 
+    public static void tratamientoFicheroXML(String fileName) {
+        List<PersonaDTO> personas = new ArrayList<>();
+        try {
+            InputStream input = App.class.getClassLoader().getResourceAsStream(fileName);            
 
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(input);
+
+            doc.getDocumentElement().normalize();
+            System.out.println("Elemento raíz: " + doc.getDocumentElement().getNodeName());
+
+            NodeList lista = doc.getElementsByTagName("persona");
+
+            for (int i = 0; i < lista.getLength(); i++) {
+                Node nodo = lista.item(i);
+
+                if (nodo.getNodeType() == Node.ELEMENT_NODE) {
+                    Element elemento = (Element) nodo;
+
+                    String dni = elemento.getElementsByTagName("dni").item(0).getTextContent();
+                    String nombre = elemento.getElementsByTagName("nombre").item(0).getTextContent();
+                    String edad = elemento.getElementsByTagName("edad").item(0).getTextContent();
+
+                    System.out.println("DNI: " + dni + ", Nombre: " + nombre + ", Edad: " + edad);
+                    personas.add(new PersonaDTO(dni, nombre, Integer.valueOf(edad)));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }    
+    
 
 }

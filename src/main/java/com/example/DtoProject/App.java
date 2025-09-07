@@ -2,12 +2,13 @@ package com.example.DtoProject;
 import java.io.*;
 import java.util.*;
 import com.example.DtoProject.dto.PersonaDTO;
+import com.opencsv.*;
 
 public class App {
     public static void main(String[] args) {
         
         //Leer CSV
-        List<PersonaDTO> personas = leerPersonasDesdeCSV("personas.csv");                
+        List<PersonaDTO> personas = leerPersonasDesdeCsvConLibreria("personas.csv");                
         
         // Mostrar en consola
         for (PersonaDTO p : personas) {
@@ -23,9 +24,8 @@ public class App {
         System.out.println("Fichero guardado en: " + fileName);        
     }
     
-    public static List<PersonaDTO> leerPersonasDesdeCSV(String fileName) {
+    public static List<PersonaDTO> leerPersonasDesdeCsvSinLibreria(String fileName) {
         List<PersonaDTO> personas = new ArrayList<>();
-
         // cargar recurso desde la carpeta "Resources"
         InputStream input = App.class.getClassLoader().getResourceAsStream(fileName);
 
@@ -60,6 +60,48 @@ public class App {
  
     }
 
+    public static List<PersonaDTO> leerPersonasDesdeCsvConLibreria(String fileName) {
+        List<PersonaDTO> personas = new ArrayList<>();
+        // cargar recurso desde la carpeta "Resources"
+        InputStream input = App.class.getClassLoader().getResourceAsStream(fileName);
+        if (input == null) {
+            throw new RuntimeException("No se encontró el archivo: " + fileName);
+        }
+        try {            
+           BufferedReader br = new BufferedReader(new InputStreamReader(input)); 
+            CSVParser parser = new CSVParserBuilder()
+                    .withSeparator(';')
+                    .build();
+
+            CSVReader csvReader = new CSVReaderBuilder(br)
+                    .withCSVParser(parser)
+                    .build();
+           
+           boolean primera = true;
+            String[] fila;
+            while ((fila = csvReader.readNext()) != null) {
+                // Procesa la fila de datos CSV (que es un String[])
+                if (primera) {
+                    primera = false; // saltar cabecera
+                    continue;
+                }
+
+                String dni = fila[0].trim();
+                String nombre = fila[1].trim();
+                int edad = Integer.parseInt(fila[2].trim());
+
+                personas.add(new PersonaDTO(dni, nombre, edad));
+            }
+          
+           csvReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return personas;           
+    }
+    
+    
     public static void guardarPersonasEnCSV(List<PersonaDTO> personas, String fileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             // Escribir encabezado

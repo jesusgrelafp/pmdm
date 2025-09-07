@@ -20,7 +20,7 @@ public class App {
         
         // Escritura CSV en el directorio "descargas"        
         String fileName = System.getProperty("user.home")+ "\\Downloads\\personas.csv";
-        guardarPersonasEnCSV(personas,fileName);
+        guardarPersonasEnCsvConLibreria(personas,fileName);
         System.out.println("Fichero guardado en: " + fileName);        
     }
     
@@ -59,7 +59,6 @@ public class App {
         return personas;
  
     }
-
     public static List<PersonaDTO> leerPersonasDesdeCsvConLibreria(String fileName) {
         List<PersonaDTO> personas = new ArrayList<>();
         // cargar recurso desde la carpeta "Resources"
@@ -99,10 +98,8 @@ public class App {
         }
         
         return personas;           
-    }
-    
-    
-    public static void guardarPersonasEnCSV(List<PersonaDTO> personas, String fileName) {
+    }        
+    public static void guardarPersonasEnCsvSinLibreria(List<PersonaDTO> personas, String fileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             // Escribir encabezado
             writer.write("DNI,Nombre,Edad");
@@ -118,6 +115,26 @@ public class App {
             
         } catch (IOException e) {
             System.err.println("Error al guardar el archivo: " + e.getMessage());
+        }
+    }
+    public static void guardarPersonasEnCsvConLibreria(List<PersonaDTO> personas, String fileName) {
+        // Escribir datos
+        List<String[]> datos = new ArrayList<>();
+        datos.add(new String[]{"DNI","Nombre","Edad"});
+        for (PersonaDTO persona : personas) {
+               datos.add(persona.toListOfStrings());                
+        }
+            
+        try (CSVWriter writer = new CSVWriter(new FileWriter(fileName), ';',
+                                              CSVWriter.NO_QUOTE_CHARACTER,
+                                              CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                                              CSVWriter.DEFAULT_LINE_END)) {
+
+            writer.writeAll(datos); // escribe todo el ArrayList en el fichero
+            System.out.println("Archivo CSV guardado en " + fileName);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
                 
